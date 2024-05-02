@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Grid Text Generator</title>
+    <style>
+        /* CSS styles for grid and settings */
+        #grid-wrapper {
+            height: 20vh; /* Set grid container height to 20% of the viewport height */
+            overflow-y: auto; /* Add scroll bar if content exceeds container height */
+            border: 2px solid #000; /* Add border to the grid wrapper */
+            border-radius: 5px; /* Add border radius for rounded corners */
+            padding: 5px; /* Add padding to the grid wrapper */
+        }
+
+        #grid-container {
+            display: flex;
+            flex-direction: column; /* Stack rows on top of each other */
+            gap: 2px;
+        }
+
+        .grid-row {
+            display: flex;
+            gap: 2px;
+        }
+
+        .grid-box {
+            width: 10%; /* Set width of each box */
+            padding: 5px;
+            box-sizing: border-box;
+            height: calc(100% / 5 - 4px); /* Set height equal to width */
+            text-align: center; /* Center align text */
+            font-size: 14px; /* Adjust font size */
+            border: 1px solid #000; /* Add border to each grid box */
+            border-radius: 5px; /* Add border radius for rounded corners */
+            background-color: #fff; /* Set background color */
+        }
+
+        #free-space-option {
+            margin-top: 10px;
+        }
+
+        #free-space-text {
+            width: 100%;
+            height: 100px;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="grid-wrapper">
+        <div id="grid-container">
+            <!-- Grid will be generated here -->
+        </div>
+    </div>
+
+    <div id="settings-container">
+        <label for="grid-size">Grid Size:</label>
+        <select id="grid-size">
+            <option value="5">5x5</option>
+            <option value="6">6x6</option>
+            <option value="7">7x7</option>
+        </select>
+
+        <div id="free-space-option" style="display: none;">
+            <input type="checkbox" id="free-space-toggle">
+            <label for="free-space-toggle">Free Space?</label>
+            <textarea id="free-space-text" placeholder="Enter text for center box"></textarea>
+        </div>
+    </div>
+
+    <button id="download-btn">Download Grid as PNG</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const gridSizeSelect = document.getElementById("grid-size");
+            const gridContainer = document.getElementById("grid-container");
+            const freeSpaceOption = document.getElementById("free-space-option");
+            const freeSpaceText = document.getElementById("free-space-text");
+            let freeSpaceEnabled = false;
+
+            gridSizeSelect.addEventListener("change", function() {
+                const gridSize = parseInt(gridSizeSelect.value);
+                generateGrid(gridSize);
+                toggleFreeSpaceOption(gridSize);
+            });
+
+            document.getElementById("free-space-toggle").addEventListener("change", function() {
+                freeSpaceEnabled = this.checked;
+                if (freeSpaceEnabled) {
+                    replaceMiddleSquare(freeSpaceText.value);
+                    freeSpaceText.setAttribute("readonly", "true"); // Disable typing in Free Space box
+                } else {
+                    // Uncheck - restore original middle square value
+                    const gridSize = parseInt(gridSizeSelect.value);
+                    clearMiddleSquare(gridSize);
+                    freeSpaceText.removeAttribute("readonly"); // Enable typing in Free Space box
+                }
+            });
+
+            function generateGrid(size) {
+                gridContainer.innerHTML = ""; // Clear previous grid
+                for (let i = 0; i < size; i++) {
+                    const row = document.createElement("div");
+                    row.classList.add("grid-row");
+                    for (let j = 0; j < size; j++) {
+                        const box = document.createElement("input");
+                        box.setAttribute("type", "text");
+                        box.setAttribute("class", "grid-box");
+                        box.setAttribute("placeholder", "Enter text");
+                        row.appendChild(box);
+                    }
+                    gridContainer.appendChild(row);
+                }
+            }
+
+            function toggleFreeSpaceOption(size) {
+                if (size % 2 === 1) {
+                    freeSpaceOption.style.display = "block";
+                } else {
+                    freeSpaceOption.style.display = "none";
+                }
+            }
+
+            function replaceMiddleSquare(text) {
+                const middleIndex = Math.floor(parseInt(gridSizeSelect.value) / 2);
+                const middleBox = document.querySelectorAll('.grid-box')[middleIndex * (parseInt(gridSizeSelect.value)) + middleIndex];
+                middleBox.value = text;
+            }
+
+            function clearMiddleSquare(size) {
+                const middleIndex = Math.floor(size / 2);
+                const middleBox = document.querySelectorAll('.grid-box')[middleIndex * size + middleIndex];
+                middleBox.value = ""; // Clear the middle square
+            }
+
+            // Initial grid generation
+            generateGrid(parseInt(gridSizeSelect.value));
+            toggleFreeSpaceOption(parseInt(gridSizeSelect.value));
+        });
+    </script>
+</body>
+</html>
